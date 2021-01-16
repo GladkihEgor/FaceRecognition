@@ -43,5 +43,14 @@ class View:
             y = landmarks.part(n).y
             cv.circle(image, (x, y), 3, (255, 0, 0), -1)
 
+    @staticmethod
+    def add_people_count_text(count, image):
+        cv.putText(img=image,
+                   text=f'Number of recognized people: {count}',
+                   org=(10, 50),
+                   fontFace=cv.FONT_HERSHEY_DUPLEX,
+                   fontScale=1,
+                   color=(255, 255, 255))
+
     def _nothing(self, *args):
         pass

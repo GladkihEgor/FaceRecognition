@@ -6,7 +6,6 @@ from methods import FaceRecognitionMethod
 
 class FaceRecognition:
     _control_points = [30, 48, 54, 36, 45, 39, 42, 62]
-    _faces_count = []
     _fourcc = cv.VideoWriter_fourcc(*'XVID')
     _video_writer = cv.VideoWriter('output/FaceRecognition.avi', _fourcc, 10.0, (1280, 1024))
     _video_capture = cv.VideoCapture(0)
@@ -19,6 +18,7 @@ class FaceRecognition:
 
     def run(self, method=FaceRecognitionMethod.HAARCASCADE):
         self.view.setup()
+        people_count = []
         while self._video_capture.isOpened():
             (is_show_rectangle, dots_count, is_show_landmarks) = self.view.create_trackbars()
             is_success, image = self._video_capture.read()
@@ -34,9 +34,11 @@ class FaceRecognition:
                 else:
                     face = dlib.rectangle
                     print('No such method')
-                self._faces_count.append(face)
+                self.view.add_people_count_text(len(people_count), image)
+                people_count.clear()
 
                 for points in face:
+                    people_count.append(1)
                     if is_show_rectangle == self.view.on:
                         self.view.draw_face_rectangle(image, points)
 
