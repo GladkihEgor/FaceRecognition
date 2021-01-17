@@ -6,7 +6,7 @@ class View:
     on = 0
     off = 1
     _show_rectangle = 'Show rectangle'
-    _show_dots = 'Show_dots'
+    _show_dots = 'Show dots'
     _count = 'Dots count'
     _image = None
 
