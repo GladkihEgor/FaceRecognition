@@ -15,39 +15,42 @@ class FaceRecognition:
 
     def __init__(self, view):
         self.view = view
+        self._image = None
+        self._image_gray = None
 
     def run(self, method=FaceRecognitionMethod.HAARCASCADE):
         self.view.setup()
         people_count = []
         while self._video_capture.isOpened():
             (is_show_rectangle, dots_count, is_show_landmarks) = self.view.create_trackbars()
-            is_success, image = self._video_capture.read()
+            is_success, self._image = self._video_capture.read()
 
             if is_success:
-                image = cv.flip(image, 1)
-                image_gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+                self._image = cv.flip(self._image, 1)
+                self.view.set_image(self._image)
+                self._image_gray = cv.cvtColor(self._image, cv.COLOR_BGR2GRAY)
 
                 if method == FaceRecognitionMethod.HAARCASCADE:
-                    face = self._use_haarcascade(image_gray)
+                    frame = self._use_haarcascade()
                 elif method == FaceRecognitionMethod.DETECTOR:
-                    face = self._use_dlib_detector(image_gray)
+                    frame = self._use_dlib_detector()
                 else:
-                    face = dlib.rectangle
                     print('No such method')
-                self.view.add_people_count_text(len(people_count), image)
+                    break
+                self.view.add_people_count_text(len(people_count))
                 people_count.clear()
 
-                for points in face:
+                for face in frame:
                     people_count.append(1)
                     if is_show_rectangle == self.view.on:
-                        self.view.draw_face_rectangle(image, points)
+                        self.view.draw_face_rectangle(face)
 
                     if is_show_landmarks == self.view.on:
-                        landmarks = self._predict_landmarks(image_gray, points)
+                        landmarks = self._predict_landmarks(face)
                         count = self._choose_dots(dots_count)
-                        self.view.draw_landmarks(landmarks, count, image)
+                        self.view.draw_landmarks(landmarks, count)
 
-                self.view.show_image(image)
+                self.view.show_image()
                 if cv.waitKey(1) & 0xFF == ord('q'):
                     break
 
@@ -73,18 +76,21 @@ class FaceRecognition:
         elif flag == 5:
             return range(0, 68)
 
-    def _use_haarcascade(self, gray_image):
-        face = self._face_cascade_classifier.detectMultiScale(gray_image, 1.9, 5)
-        for (x, y, w, h) in face:
+    def _use_haarcascade(self):
+        frame = self._face_cascade_classifier.detectMultiScale(self._image_gray, 1.9, 5)
+        result = dlib.rectangles()
+        for (x, y, w, h) in frame:
             left = x
             top = y
             right = (x + w)
             bottom = (y + h)
             face = dlib.rectangle(left, top, right, bottom)
-        return face
+            result.append(face)
+            return result
+        return result
 
-    def _use_dlib_detector(self, gray_image, ):
-        return self._detector(gray_image, 0)
+    def _use_dlib_detector(self):
+        return self._detector(self._image_gray, 0)
 
-    def _predict_landmarks(self, gray_image, face):
-        return self._predictor(gray_image, face)
+    def _predict_landmarks(self, face):
+        return self._predictor(self._image_gray, face)

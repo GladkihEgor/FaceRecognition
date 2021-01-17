@@ -8,6 +8,10 @@ class View:
     _show_rectangle = 'Show rectangle'
     _show_dots = 'Show_dots'
     _count = 'Dots count'
+    _image = None
+
+    def set_image(self, image):
+        self._image = image
 
     def setup(self):
         cv.namedWindow(self.title)
@@ -21,31 +25,28 @@ class View:
         is_show_dots = cv.getTrackbarPos(self._show_dots, self.title)
         return is_show_rectangle, dots_count, is_show_dots
 
-    def show_image(self, image):
-        cv.imshow(self.title, image)
+    def show_image(self):
+        cv.imshow(self.title, self._image)
 
     @staticmethod
     def close():
         cv.destroyAllWindows()
 
-    @staticmethod
-    def draw_face_rectangle(image, points):
-        x1 = points.left()
-        x2 = points.right()
-        y1 = points.top()
-        y2 = points.bottom()
-        cv.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 2)
+    def draw_face_rectangle(self, face):
+        x1 = face.left()
+        x2 = face.right()
+        y1 = face.top()
+        y2 = face.bottom()
+        cv.rectangle(self._image, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
-    @staticmethod
-    def draw_landmarks(landmarks, count, image):
+    def draw_landmarks(self, landmarks, count):
         for n in count:
             x = landmarks.part(n).x
             y = landmarks.part(n).y
-            cv.circle(image, (x, y), 3, (255, 0, 0), -1)
+            cv.circle(self._image, (x, y), 3, (255, 0, 0), -1)
 
-    @staticmethod
-    def add_people_count_text(count, image):
-        cv.putText(img=image,
+    def add_people_count_text(self, count):
+        cv.putText(img=self._image,
                    text=f'Number of recognized people: {count}',
                    org=(10, 50),
                    fontFace=cv.FONT_HERSHEY_DUPLEX,
